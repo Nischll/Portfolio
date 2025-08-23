@@ -1,12 +1,17 @@
+import { Button } from "./components/ui/button";
+
 function App() {
   return (
     <>
       <main>
-        <div className="text-gray-900">Direct utility</div>
-        <div className="text-amber-400">Custom class (apply)</div>
-        <button className="bg-success text-success-foreground px-4 py-2 rounded">
-          Branch
-        </button>
+        <Button variant="primary">Primary</Button>
+        <Button variant="secondary">Secondary</Button>
+        <Button variant="accent">Accent</Button>
+        <Button variant="neutral">Neutral</Button>
+        <Button variant="outline">Outline</Button>
+        <Button variant="destructive">Destructive</Button>
+        <Button variant="ghost">Ghost</Button>
+        <Button variant="link">Link</Button>
       </main>
     </>
   );
