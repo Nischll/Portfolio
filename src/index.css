@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
+/* If your navbar is ~64px high */
+:root {
+  --nav-h: 64px;
+}
+
+/* Utility class for anchor scroll targets 
+   so content isn't hidden behind sticky nav */
+.scroll-section {
+  scroll-margin-top: var(--nav-h);
+}
+
 /* ------------------------------------------------------------------
    Design tokens (CSS variables)
    - Keep HSL or hex tokens here in one place for easy tuning.
