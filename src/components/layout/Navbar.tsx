@@ -36,6 +36,19 @@ const Navbar = () => {
     return () => window.removeEventListener("keydown", onKey);
   }, [openMenu]);
 
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (!id) return;
+
+    // Wait one frame so the DOM is fully laid out
+    requestAnimationFrame(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "auto", block: "start" });
+      }
+    });
+  }, []);
+
   const current = (hash?.replace("#", "") || "home") as SectionId;
 
   return (
