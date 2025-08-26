@@ -53,6 +53,60 @@ html {
     font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
       "Helvetica Neue", Arial;
   }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+  }
+
+  p {
+    @apply font-body;
+  }
+  /* NAV LINK: animated underline that grows L→R on hover or when .active is present */
+  .nav-link {
+    @apply relative inline-block text-sm font-medium transition-colors focus:outline-none;
+  }
+
+  /* make room under the text so the bar isn't right up on characters */
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -6px; /* adjust so underline sits nicely under text */
+    width: 100%;
+    height: 2px;
+    background-color: var(--neutral); /* uses your design token */
+    transform-origin: left center;
+    transform: scaleX(0);
+    transition: transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1), opacity 220ms;
+    opacity: 0.95;
+    border-radius: 2px;
+  }
+
+  /* hover / focus visible grows line */
+  .nav-link:hover::after,
+  .nav-link:focus::after,
+  .nav-link:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  /* active state: keeps the underline visible (used when current === item.id) */
+  .nav-link.active::after {
+    transform: scaleX(1);
+    /* you can slightly change color for active */
+    background-color: var(--primary-dark);
+  }
+
+  /* accessibility: visible focus ring while keeping underline */
+  .nav-link:focus-visible {
+    outline: 2px solid transparent;
+    box-shadow: 0 0 0 3px rgba(84, 84, 84, 0.08);
+    border-radius: 4px;
+  }
 }
 
 /* ------------------------------------------------------------------
