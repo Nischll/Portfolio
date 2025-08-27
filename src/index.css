@@ -21,6 +21,10 @@ section[id] {
   scroll-margin-top: var(--nav-h); /* you already set --nav-h on the header */
 }
 
+.section {
+  scroll-margin-top: var(--nav-h);
+}
+
 /* ------------------------------------------------------------------
    Design tokens (CSS variables)
    - Keep HSL or hex tokens here in one place for easy tuning.

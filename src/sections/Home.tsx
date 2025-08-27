@@ -32,7 +32,6 @@ const Home = () => {
         <div
           className={cn(
             "lg:col-span-4 col-span-1 bg-transparent py-10",
-            // entrance animation classes:
             "transform transition-all duration-700 ease-out will-change-transform",
             mounted ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-6"
           )}

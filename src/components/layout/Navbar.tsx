@@ -9,6 +9,7 @@ const Navbar = () => {
   );
   const [openMenu, setOpenMenu] = useState<boolean>(false);
   const menuBtnRef = useRef<HTMLButtonElement | null>(null);
+  const closeBtnRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     const onHash = () => setHash(window.location.hash);
@@ -36,11 +37,18 @@ const Navbar = () => {
     return () => window.removeEventListener("keydown", onKey);
   }, [openMenu]);
 
+  // focus the close button when menu opens
+  useEffect(() => {
+    if (openMenu) {
+      requestAnimationFrame(() => closeBtnRef.current?.focus());
+    }
+  }, [openMenu]);
+
+  // scroll to hash on initial mount (keeps your behavior)
   useEffect(() => {
     const id = window.location.hash.slice(1);
     if (!id) return;
 
-    // Wait one frame so the DOM is fully laid out
     requestAnimationFrame(() => {
       const el = document.getElementById(id);
       if (el) {
@@ -48,6 +56,92 @@ const Navbar = () => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const navHString = getComputedStyle(
+      document.documentElement
+    ).getPropertyValue("--nav-h");
+    const navH = navHString ? parseInt(navHString, 10) || 0 : 0;
+
+    const callback: IntersectionObserverCallback = (entries) => {
+      // try to find intersecting entries first
+      const intersecting = entries.filter((e) => e.isIntersecting);
+      let chosenId: string | undefined;
+
+      if (intersecting.length) {
+        // pick the entry with the largest intersectionRatio
+        chosenId = intersecting.sort(
+          (a, b) => b.intersectionRatio - a.intersectionRatio
+        )[0].target.id;
+      } else {
+        // fallback: no entries are intersecting (can happen near edges) —
+        // choose section whose top is closest to nav bottom (navH)
+        const distances: { id: string; distance: number }[] = [];
+        NAV_ITEMS.forEach((item) => {
+          const el = document.getElementById(item.id);
+          if (!el) return;
+          const rect = el.getBoundingClientRect();
+          // distance from the nav bottom (so 0 means exactly below nav)
+          distances.push({ id: item.id, distance: Math.abs(rect.top - navH) });
+        });
+        if (distances.length) {
+          distances.sort((a, b) => a.distance - b.distance);
+          chosenId = distances[0].id;
+        }
+      }
+
+      if (chosenId) {
+        const newHash = `#${chosenId}`;
+        // only replace if it actually differs from current location hash
+        if (newHash !== window.location.hash) {
+          window.history.replaceState(null, "", newHash);
+        }
+        // always update state so UI reflects the chosen section
+        setHash(newHash);
+      }
+    };
+
+    const observer = new IntersectionObserver(callback, {
+      root: null,
+      // keep rootMargin so sticky nav is accounted for — tune the bottom as needed
+      rootMargin: `-${navH}px 0px -40% 0px`,
+      threshold: [0.25, 0.5, 0.75],
+    });
+
+    const observedEls: Element[] = [];
+    NAV_ITEMS.forEach((item) => {
+      const el = document.getElementById(item.id);
+      if (el) {
+        observer.observe(el);
+        observedEls.push(el);
+      }
+    });
+
+    // extra safety: if user is at very top, force #home quickly
+    const topCheck = () => {
+      if (window.scrollY <= navH + 5) {
+        const homeHash = "#home";
+        if (homeHash !== window.location.hash) {
+          window.history.replaceState(null, "", homeHash);
+        }
+        setHash(homeHash);
+      }
+    };
+
+    window.addEventListener("scroll", topCheck, { passive: true });
+
+    return () => {
+      observedEls.forEach((el) => observer.unobserve(el));
+      observer.disconnect();
+      window.removeEventListener("scroll", topCheck);
+    };
+    // NAV_ITEMS is stable; intentionally no reactive deps so observer isn't recreated too often
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ---------- end observer ----------
 
   const current = (hash?.replace("#", "") || "home") as SectionId;
 
@@ -63,10 +157,10 @@ const Navbar = () => {
             className="sm:hidden inline-flex items-center justify-center h-10 w-10 rounded-md text-neutral hover:bg-neutral/6"
             aria-label="Toggle menu"
             aria-expanded={openMenu}
+            aria-controls="mobile-menu"
             onClick={() => setOpenMenu((s) => !s)}
           >
-            <Menu />
-            {/* {!openMenu ? <Menu /> : <X />} */}
+            {!openMenu ? <Menu /> : <X />}
           </button>
 
           <span className="font-semibold">Nischal Shrestha</span>
@@ -98,7 +192,6 @@ const Navbar = () => {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center h-8 w-8 rounded-md bg-transparent text-neutral hover:bg-[#eaf3ff]"
             >
-              {/* inline SVG LinkedIn */}
               <svg
                 viewBox="0 0 24 24"
                 className="h-5 w-5"
@@ -129,11 +222,13 @@ const Navbar = () => {
             {openMenu && (
               <div
                 role="dialog"
+                id="mobile-menu"
                 className="fixed left-0 right-0 bottom-0 z-50 mx-auto w-full max-w-xl bg-white rounded-t-xl shadow-xl overflow-hidden transform transition-transform duration-300 "
               >
                 <div className="flex items-center justify-between p-4 border-b">
                   <span className="font-semibold">Menu</span>
                   <button
+                    ref={closeBtnRef}
                     onClick={() => {
                       setOpenMenu(false);
                       menuBtnRef.current?.focus();
