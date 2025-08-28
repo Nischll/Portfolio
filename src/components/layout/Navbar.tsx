@@ -137,11 +137,7 @@ const Navbar = () => {
       observer.disconnect();
       window.removeEventListener("scroll", topCheck);
     };
-    // NAV_ITEMS is stable; intentionally no reactive deps so observer isn't recreated too often
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // ---------- end observer ----------
 
   const current = (hash?.replace("#", "") || "home") as SectionId;
 
